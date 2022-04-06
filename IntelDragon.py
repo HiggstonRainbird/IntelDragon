@@ -4,11 +4,10 @@
 # Last updated April 6th, 2022
 
 from __future__ import print_function
-import cython
 import gensim, logging
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
-import codecs
+# import codecs
 import streamlit as st
 import pandas as pd
 

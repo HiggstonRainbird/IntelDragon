@@ -6,15 +6,14 @@
 from __future__ import print_function
 import gensim, logging
 from nltk.tokenize import RegexpTokenizer
-from nltk.corpus import stopwords
-# import codecs
 import streamlit as st
 import pandas as pd
+
+from localVariables import stop
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 tokenizer = RegexpTokenizer(r'[0-9A-Za-z]*[A-Za-z][0-9A-Za-z]*')
-stop = stopwords.words('english')
 
 # Tokenizer function, takes a string and returns a list of tokens.
 
@@ -23,18 +22,6 @@ def convert_to_tokens(text):
 	intermediate = [(i.lower() if i[1:].lower()==i[1:] else i) for i in intermediate]
 	intermediate = [i for i in intermediate if i not in stop]
 	return intermediate
-
-class MySentences(object):
-	def __init__(self, fname):
-		self.fname = fname
-	def __iter__(self):
-		for line in codecs.open(self.fname):
-			yield convert_to_tokens(line)
-
-sentences = MySentences('Word2VecTraining.txt')
-
-#model = gensim.models.Word2Vec(sentences, min_count=15, vector_size=500)
-#model.save('Cybersecurity_Unigram_01.bin')
 
 model = gensim.models.Word2Vec.load('Cybersecurity_Unigram_01.bin')
 #len(model.wv.vocab)

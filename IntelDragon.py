@@ -52,8 +52,8 @@ with st.expander("Word Similarity", expanded=False):
 with st.expander("One of These Things is Not Like the Others", expanded=False):
 	with st.form(key="odd_man_out_form"):
 
-		oddManOutInput = st.text_area("", "WannaCry EternalBlue ryuk petya REvil")
-		# "WannaCry EternalBlue ryuk petya REvil" #EternalBlue
+		oddManOutInput = st.text_area("", "WannaCry Bitcoin Ryuk Petya REvil")
+		# "WannaCry Bitcoin ryuk petya REvil" #EternalBlue
 
 		oddManOutOutput = model.wv.doesnt_match(convert_to_tokens(oddManOutInput)) #EternalBlue
 

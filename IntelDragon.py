@@ -174,4 +174,5 @@ with st.expander("One of These Things is Not Like the Others", expanded=False):
 
 		st.markdown("## Similarity Matrix")
 		similarityMatrix = pd.DataFrame(similarityMatrix, columns=parsedInput, index=parsedInput)
+		similarityMatrix.round(3)
 		st.table(similarityMatrix)

@@ -69,7 +69,7 @@ sentences = np.array(article_sentences)
 
 st.title("IntelDragon")
 
-initial_input_text = "Over the past several years, we've built algorithms for processing data and products to deliver them to our clients. We've constantly pushed our hardware to its limit and solved issues of high-availability, redundancy and parallelization using cutting-edge technology like Cassandra, Redis and postGIS and plain old software engineering tricks. "
+initial_input_text = "I'm mostly interested in Bitcoin, Ethereum, and potential financial and cryptocurrency scams."
 with st.form(key="relevant_article_form"):
 	input_text = st.text_area("Your interests and needs:", initial_input_text)
 

@@ -131,7 +131,7 @@ with st.form(key="relevant_article_form"):
 with st.expander("Word Similarity", expanded=False):
 	with st.form(key="word_similarity_form"):
 
-		similarityInputPositive = st.text_area("Like these words:", "RCE")
+		similarityInputPositive = st.text_area("Like these words:", "WannaCry")
 		similarityInputNegative = st.text_area("Unlike these words:", "")
 		similarityColumns = ["Word", "Similarity"]
 
@@ -145,7 +145,6 @@ with st.expander("Word Similarity", expanded=False):
 
 		st.table(similarityOutput)
 
-		dist = custom_cosine_similarity(model.wv.get_vector("bitcoin"),model.wv.get_vector("ethereum"))
 		st.markdown(f"{dist}")
 		# st.markdown(f"")
 
@@ -155,10 +154,24 @@ with st.expander("One of These Things is Not Like the Others", expanded=False):
 	with st.form(key="odd_man_out_form"):
 
 		oddManOutInput = st.text_area("", "WannaCry Bitcoin Ryuk Petya REvil")
+		parsedInput = convert_to_tokens(oddManOutInput)
 		# "WannaCry Bitcoin ryuk petya REvil" #EternalBlue
 
-		oddManOutOutput = model.wv.doesnt_match(convert_to_tokens(oddManOutInput)) #EternalBlue
+		oddManOutOutput = model.wv.doesnt_match(parsedInput) #EternalBlue
 
 		submit_button_oddManOut = st.form_submit_button(label="Refresh results")
 
-		oddManOutOutput
+		# Make similarity matrix of the input words.
+		similarityMatrix = []
+		for i in range(0,len(parsedInput)):
+			tmpMatrix = []
+			for j in range(0, len(parsedInput)):
+				tmpMatrix.append(model.wv.similarity(parsedInput[i], parsedInput[j]))
+			similarityMatrix.append(tmpMatrix)
+		
+		st.markdown("## Least Similar:")
+		st.markdown(f"{oddManOutOutput}")
+
+		st.markdown("## Similarity Matrix")
+		similarityMatrix = pd.DataFrame(similarityMatrix, columns=parsedInput, index=parsedInput)
+		st.table(similarityMatrix)

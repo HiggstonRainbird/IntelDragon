@@ -1,15 +1,16 @@
 # IntelDragon Backend
 # Written by David Freiberg and Christine Palmer
 # Created April 6th, 2022.
-# Last updated April 6th, 2022
+# Last updated April 8th, 2022
 
 from __future__ import print_function
 import gensim, logging
 from nltk.tokenize import RegexpTokenizer
 import streamlit as st
 import pandas as pd
+import numpy as np
 
-from localVariables import stop
+from localVariables import stop, article_list
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -17,18 +18,115 @@ tokenizer = RegexpTokenizer(r'[0-9A-Za-z]*[A-Za-z][0-9A-Za-z]*')
 
 # Tokenizer function, takes a string and returns a list of tokens.
 
+model = gensim.models.Word2Vec.load('Cybersecurity_Unigram_01.bin')
 def convert_to_tokens(text):
 	intermediate = tokenizer.tokenize(text)
 	intermediate = [(i.lower() if i[1:].lower()==i[1:] else i) for i in intermediate]
 	intermediate = [i for i in intermediate if i not in stop]
+	# Check if each token is in the model.
+	intermediate = [i for i in intermediate if i in model.wv.key_to_index]
 	return intermediate
 
-model = gensim.models.Word2Vec.load('Cybersecurity_Unigram_01.bin')
-#len(model.wv.vocab)
+def custom_cosine_similarity(a, b):
+	return np.dot(gensim.matutils.unitvec(a), gensim.matutils.unitvec(b))
 
-#[print(i) for i in model.wv.most_similar(positive=['password'])]
+# Preprocessing of cached articles.
+
+article_titles = []
+article_vectors = []
+article_texts = []
+article_url = []
+article_sentences = []
+for article in article_list:
+	banned_titles = ["Types of Cyber Attacks:", "Subscribe to read"]
+	if any(b in article["title"] for b in banned_titles):
+		continue
+	article_vector = []
+	sentences = []
+	for line in article["text"].replace("\n","  ").split(". "):
+		line_vector = []
+		for word in convert_to_tokens(line):
+			try:
+				line_vector.append(model.wv.get_vector(word))
+			except:
+				pass
+		if len(line_vector)>0:
+			article_vector.append(np.mean(line_vector, axis=0))
+			sentences.append(line + ".")	
+	article_vectors.append(article_vector)
+	article_titles.append(article["title"])
+	article_url.append(article["url"])
+	article_texts.append(article["text"])
+	article_sentences.append(sentences)
+		
+data = np.array(article_vectors) # sentence vectors
+labels = np.array(article_titles) # article titles
+texts = np.array(article_texts) # article texts
+urls = np.array(article_url)
+sentences = np.array(article_sentences)
+
+# Main function.
 
 st.title("IntelDragon")
+
+initial_input_text = "Over the past several years, we've built algorithms for processing data and products to deliver them to our clients. We've constantly pushed our hardware to its limit and solved issues of high-availability, redundancy and parallelization using cutting-edge technology like Cassandra, Redis and postGIS and plain old software engineering tricks. "
+with st.form(key="relevant_article_form"):
+	input_text = st.text_area("Your interests and needs:", initial_input_text)
+
+	sentence_vector = []
+	line_vector = []
+	input_sentence = ""
+	for sentence in input_text.replace("\n","").split(". "):
+		line_vector = []
+		for word in convert_to_tokens(sentence):
+			try:
+				line_vector.append(model.wv.get_vector(word))
+			except:
+				pass
+			if len(line_vector)>0:
+				sentence_vector = np.mean(line_vector, axis=0)
+				input_sentence = sentence
+
+	sorted_articles = []
+	for a in range(0,len(article_vectors)-1):
+		if len(article_vectors[a]) < 10:
+			continue
+		relevance = -1.0
+		most_relevant_sentence_id = 0
+		for s in range(0,len(article_vectors[a])-1):
+			dist = custom_cosine_similarity(sentence_vector, article_vectors[a][s])
+			if dist > relevance:
+				relevance = dist
+				most_relevant_sentence_id = s
+		sorted_articles.append([a, most_relevant_sentence_id, relevance])
+
+	sorted_articles.sort(key=lambda l: -l[-1])
+
+	sorted_articles_df = pd.DataFrame(sorted_articles, columns=["article_id", "key_sentence", "relevance"])
+	
+	# # Print the lengths of all sentences.
+	# for i in range(0,len(sentences)):
+	# 	print(len(sentences[i]))
+
+	# Display the text corresponding to the top 10 articles.
+	for i in range(0,5):
+		article_id = sorted_articles_df["article_id"][i]
+		st.markdown(f"[{article_titles[article_id]}]({article_url[article_id]})")
+		#st.markdown(f"{article_sentences[article_id]}")
+		# Key sentence
+		st.markdown(f"{sentences[article_id][sorted_articles_df['key_sentence'][i]]}")
+		st.markdown(f"{sorted_articles_df['relevance'][i]}")
+		print("")
+		#st.markdown("")
+	
+	
+	# for a, score in sorted_articles[:10]:
+	# 	print(article_titles[a])
+	# 	print(score)
+	# 	print("")
+	# st.table(sorted_articles_df[:5])
+
+	submit_button_relevantArticles = st.form_submit_button("Find Relevant Articles")
 
 with st.expander("Word Similarity", expanded=False):
 	with st.form(key="word_similarity_form"):
@@ -46,7 +144,11 @@ with st.expander("Word Similarity", expanded=False):
 		similarityOutput.columns = similarityColumns
 
 		st.table(similarityOutput)
-		
+
+		dist = custom_cosine_similarity(model.wv.get_vector("bitcoin"),model.wv.get_vector("ethereum"))
+		st.markdown(f"{dist}")
+		# st.markdown(f"")
+
 		submit_button_similarity = st.form_submit_button(label="Refresh results")
 
 with st.expander("One of These Things is Not Like the Others", expanded=False):

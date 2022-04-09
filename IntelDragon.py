@@ -67,6 +67,7 @@ sentences = np.array(article_sentences)
 
 # Main function.
 
+st.set_page_config(layout="wide")
 st.title("IntelDragon")
 
 with st.expander("Word Similarity", expanded=False):
@@ -149,6 +150,7 @@ with st.form(key="relevant_article_form"):
 	sorted_articles.sort(key=lambda l: -l[-1])
 
 	sorted_articles_df = pd.DataFrame(sorted_articles, columns=["article_id", "key_sentence", "relevance"])
+	sorted_articles_df = sorted_articles_df.round(3)
 
 	submit_button_relevantArticles = st.form_submit_button("Find Relevant Articles")
 
@@ -158,7 +160,7 @@ with col0:
 	i = 0
 	article_id = sorted_articles_df["article_id"][i]
 	st.markdown(f"**[{article_titles[article_id]}]({article_url[article_id]})**")
-	st.markdown(f"*Relevance: {round(sorted_articles_df['relevance'][i],3)}*")
+	st.markdown(f"*Relevance: {sorted_articles_df['relevance'][i]}*")
 	st.markdown(f"{sentences[article_id][sorted_articles_df['key_sentence'][i]]}")
 	st.markdown("")
 

@@ -1,4 +1,5 @@
 gensim
 nltk
+scikit-learn
 pandas=0.25.3
 click<=8.0.4

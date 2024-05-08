@@ -59,11 +59,11 @@ for article in article_list:
 	article_texts.append(article["text"])
 	article_sentences.append(sentences)
 		
-data = np.array(article_vectors) # sentence vectors
-labels = np.array(article_titles) # article titles
-texts = np.array(article_texts) # article texts
-urls = np.array(article_url)
-sentences = np.array(article_sentences)
+data = np.array(article_vectors, dtype="object") # sentence vectors
+labels = np.array(article_titles, dtype="object") # article titles
+texts = np.array(article_texts, dtype="object") # article texts
+urls = np.array(article_url, dtype="object")
+sentences = np.array(article_sentences, dtype="object")
 
 # Main function.
 

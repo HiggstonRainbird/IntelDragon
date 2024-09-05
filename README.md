@@ -1,5 +1,5 @@
 # IntelDragon
-The repository for the [IntelDragon project for Philly CodeFest 2022](https://devpost.com/software/inteldragon); this project was the winner in the Collaboration division.
+The repository for the [IntelDragon project for Philly CodeFest 2022](https://devpost.com/software/inteldragon); this project was the winner in the Collaboration category.
 
 ## Inspiration
 ### Christine
